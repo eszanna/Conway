@@ -151,17 +151,16 @@ class HexagonalGrid implements Serializable{
 
 
     public void saveGridToFile(String filename) {
-        
         try (PrintWriter writer = new PrintWriter(filename, "UTF-8")) {
-
             writer.println(size);
+    
             for (int q = -size + 1; q < size; q++) {
                 for (int r = -size + 1; r < size; r++) {
                     int x = q + size - 1;
                     int y = r + size - 1;
                     if (isWithinBounds(x, y)) {
                         Hexagon hexagon = grid[x][y];
-                        writer.println(hexagon.getQ() + "," + hexagon.getR() + "," + (hexagon.getState() ? "alive" : "dead"));
+                        writer.println(q + "," + r + "," + (hexagon.getState() ? "alive" : "dead"));
                     }
                 }
             }
@@ -170,25 +169,32 @@ class HexagonalGrid implements Serializable{
             e.printStackTrace();
         }
     }
-
-
-
     public static HexagonalGrid loadGridFromFile(String filename) {
         HexagonalGrid hexagonalGrid = null;
         try (Scanner scanner = new Scanner(new File(filename))) {
             int size = Integer.parseInt(scanner.nextLine());
             hexagonalGrid = new HexagonalGrid(size);
+    
+            for (int q = -size + 1; q < size; q++) {
+                for (int r = -size + 1; r < size; r++) {
+                    int x = q + size - 1;
+                    int y = r + size - 1;
+                    hexagonalGrid.grid[x][y].setState(false);
+                }
+            }
+    
+            // Update cells according to the file
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] parts = line.split(",");
                 int q = Integer.parseInt(parts[0]);
                 int r = Integer.parseInt(parts[1]);
                 boolean isAlive = parts[2].equals("alive");
+            
                 int x = q + size - 1;
                 int y = r + size - 1;
-                if (hexagonalGrid.isWithinBounds(x, y)) {
-                    hexagonalGrid.grid[x][y].setState(isAlive);
-                }
+            
+                hexagonalGrid.grid[x][y].setState(isAlive);
             }
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred while loading the grid from a file.");
