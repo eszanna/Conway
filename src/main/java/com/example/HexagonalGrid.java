@@ -63,6 +63,7 @@ class HexagonalGrid implements Serializable{
          
     }
 
+    //Because we will not store the chosen color in the file, it is white by default
         private void initializeGridforFile() {
         grid = new Hexagon[2 * size - 1][2 * size - 1];
 
@@ -99,6 +100,7 @@ class HexagonalGrid implements Serializable{
     }
 
     public void updateGameOfLife() {
+
         Hexagon[][] newGrid = new Hexagon[2 * size - 1][2 * size - 1];
 
         for (int q = -size + 1; q < size; q++) {

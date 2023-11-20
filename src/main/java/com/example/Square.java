@@ -1,7 +1,8 @@
 package com.example;
 
+import java.io.Serializable;
 
-class Square {
+class Square implements Serializable{
     private int i;
     private int j;
     private boolean state; //alive or dead

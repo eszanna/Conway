@@ -1,12 +1,24 @@
 package com.example;
 
 import java.util.Random;
+import java.util.Scanner;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Objects;
+import java.util.Scanner;
 
 
-class SquareGrid {
+class SquareGrid implements Serializable{
     private int size;
     private Square[][] grid;
     private Color deadCellColor;
@@ -102,4 +114,50 @@ class SquareGrid {
     
         return liveNeighbors;
     }
+
+    public void saveSquareGridToFile(String filename) {
+        try (PrintWriter writer = new PrintWriter(filename, "UTF-8")) {
+            writer.println(size);
+    
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    Square square = grid[i][j];
+                    writer.println(i + "," + j + "," + (square.getState() ? "alive" : "dead"));
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred while saving the grid to a file.");
+            e.printStackTrace();
+        }
+    }
+
+    public static SquareGrid loadSquareGridFromFile(String filename) {
+        SquareGrid squareGrid = null;
+        try (Scanner scanner = new Scanner(new File(filename))) {
+            int size = Integer.parseInt(scanner.nextLine());
+            squareGrid = new SquareGrid(size, Color.BLACK); 
+    
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    squareGrid.grid[i][j].setState(false);
+                }
+            }
+    
+            // Update cells according to the file
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                int i = Integer.parseInt(parts[0]);
+                int j = Integer.parseInt(parts[1]);
+                boolean isAlive = parts[2].equals("alive");
+            
+                squareGrid.grid[i][j].setState(isAlive);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred while loading the grid from a file.");
+            e.printStackTrace();
+        }
+        return squareGrid;
+    }
 }
+
