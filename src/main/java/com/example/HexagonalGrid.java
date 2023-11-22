@@ -1,15 +1,12 @@
 package com.example;
 
 import java.util.Random;
-import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import java.util.Objects;
 
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 

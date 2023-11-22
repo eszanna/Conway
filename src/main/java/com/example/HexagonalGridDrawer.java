@@ -1,6 +1,8 @@
 package com.example;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.TimerTask;
 import java.util.Timer;
 
@@ -9,7 +11,16 @@ public class HexagonalGridDrawer extends JPanel {
     private HexagonalGrid hexagonalGrid;
     private int hexSize = 30; // default
     private Color deadCellColor;
+    private double scaleFactor = 1.0;
+    private Timer timer;
 
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
 
     public int gethexSize(){
         return hexSize;
@@ -22,10 +33,26 @@ public class HexagonalGridDrawer extends JPanel {
     public HexagonalGridDrawer(HexagonalGrid hexagonalGrid, Color deadCellColor) {
         this.hexagonalGrid = hexagonalGrid;
         this.deadCellColor = deadCellColor;
+
+
+        //to make it zoom in and out if the grid is too big, 
+        //or the size of the shapes makes it not fit the screen
+        addMouseWheelListener(new MouseWheelListener() {
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e) {
+            int notches = e.getWheelRotation();
+            if (notches < 0) {
+                scaleFactor *= 1.1; // Zoom in
+            } else {
+                scaleFactor /= 1.1; // Zoom out
+            }
+            repaint();
+        }
+        });
     }
 
     public void startGame() {
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -39,9 +66,11 @@ public class HexagonalGridDrawer extends JPanel {
         hexagonalGrid.updateGameOfLife();
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        g2d.scale(scaleFactor, scaleFactor);
     
         int xOffset = getWidth() / 2;
         int yOffset = getHeight() / 2;
@@ -85,4 +114,6 @@ public class HexagonalGridDrawer extends JPanel {
             g2d.fill(hexagon);
         }
     }
+
+    
 }

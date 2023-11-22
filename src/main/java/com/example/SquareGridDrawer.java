@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,7 +15,16 @@ public class SquareGridDrawer extends JPanel {
     private SquareGrid squareGrid;
     private int squareSize = 30; // default
     private Color deadCellColor;
+    private double scaleFactor = 1.0; //for zooming in and out
+    private Timer timer;
 
+    public Timer getTimer() {
+        return timer;
+    }
+
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
     public int getsquareSize(){
         return squareSize;
     }
@@ -25,10 +36,25 @@ public class SquareGridDrawer extends JPanel {
     public SquareGridDrawer(SquareGrid squareGrid, Color deadCellColor) {
         this.squareGrid = squareGrid;
         this.deadCellColor = deadCellColor;
+
+        //to make it zoom in and out if the grid is too big, 
+        //or the size of the shapes makes it not fit the screen
+        addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int notches = e.getWheelRotation();
+                if (notches < 0) {
+                    scaleFactor *= 1.1; // Zoom in
+                } else {
+                    scaleFactor /= 1.1; // Zoom out
+                }
+                repaint();
+            }
+            });
     }
 
     public void startGame() {
-        Timer timer = new Timer();
+        timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -42,9 +68,11 @@ public class SquareGridDrawer extends JPanel {
         squareGrid.updateGameOfLife();
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
+        g2d.scale(scaleFactor, scaleFactor);
 
         //to center it in the middle
         int panelWidth = getWidth();

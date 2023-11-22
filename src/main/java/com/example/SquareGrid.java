@@ -3,19 +3,12 @@ package com.example;
 import java.util.Random;
 import java.util.Scanner;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.Objects;
-import java.util.Scanner;
 
 
 class SquareGrid implements Serializable{

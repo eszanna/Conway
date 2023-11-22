@@ -2,9 +2,6 @@ package com.example;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Objects;
 
 public class Main {
@@ -12,6 +9,8 @@ public class Main {
     public static Color deadCellColor;
 
     public static void main(String[] args) {
+        
+        //just to make it a bit nicer
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -26,6 +25,8 @@ public class Main {
         menuFrame.setFont(new Font("Arial", Font.BOLD, 14));
         menuFrame.setBackground(Color.ORANGE);
 
+
+        //for better positioning
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -56,6 +57,7 @@ public class Main {
         menuFrame.add(colorSelection, gbc);
 
 
+        //loading and repeating the save option there
         JButton loadButton = new JButton("LOAD HEXAGONS");
             menuFrame.add(loadButton, gbc);
             loadButton.addActionListener(event -> {
@@ -64,7 +66,10 @@ public class Main {
             
             JFrame frame = new JFrame("Conway's Game of Life on Hexagons");
                 HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, Color.WHITE);
-                frame.add(drawer);
+                //to make it movable across the screen
+                JScrollPane scrollPane = new JScrollPane(drawer);
+                drawer.setPreferredSize(new Dimension(1000, 1000));
+                frame.add(scrollPane);
                 frame.setSize(800, 800);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -92,7 +97,11 @@ public class Main {
             
             JFrame frame = new JFrame("Conway's Game of Life on Hexagons");
                 SquareGridDrawer drawer = new SquareGridDrawer(squareGrid, Color.WHITE);
-                frame.add(drawer);
+                //to make it movable across the screen
+                JScrollPane scrollPane = new JScrollPane(drawer);
+                drawer.setPreferredSize(new Dimension(1000, 1000));
+                frame.add(scrollPane);
+
                 frame.setSize(800, 800);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -103,12 +112,10 @@ public class Main {
                     System.out.println("Grid state is saved in SquareGridState.txt");
                 });
 
-
                 frame.setVisible(true);
 
                 // Start the game loop
                 drawer.startGame();
-
             System.out.println("Grid state is loaded from SquareGridState.txt");
         });
 
@@ -162,11 +169,15 @@ public class Main {
             if (Objects.requireNonNull(selectedGridType).equals("Hexagon")) {
                 HexagonalGrid hexagonalGrid = new HexagonalGrid(gridSize, deadCellColor);
                 
-
                 JFrame frame = new JFrame("Conway's Game of Life");
                 HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, deadCellColor);
+
+                //to make it movable across the screen
+                JScrollPane scrollPane = new JScrollPane(drawer);
+                drawer.setPreferredSize(new Dimension(1000, 1000));
+                frame.add(scrollPane);
+
                 drawer.sethexSize(polygonSize);
-                frame.add(drawer);
                 frame.setSize(800, 800);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -177,20 +188,50 @@ public class Main {
                     System.out.println("Grid state is saved in gridState.txt");
                 });
 
+                // Create a new JButton for the pause button
+                JButton pauseButton = new JButton("Pause");
+                pauseButton.setBackground(Color.BLUE); // Set the button color to blue
+                //pauseButton.setForeground(Color.WHITE); // Set the text color to white
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                frame.add(pauseButton, BorderLayout.NORTH);
+                pauseButton.addActionListener(event -> {
+                    // Pause the game
+                    drawer.getTimer().cancel();
+                    drawer.setTimer(null);
+                });
+
+                // Restart the game
+                JButton restartButton = new JButton("Restart");
+                restartButton.setBackground(Color.GREEN); // Set the button color to green
+                restartButton.setForeground(Color.BLACK); // Set the text color to white
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                frame.add(restartButton, BorderLayout.EAST);
+                restartButton.addActionListener(event -> {
+                    if (drawer.getTimer() == null) {
+                        drawer.startGame(); // start a new game
+                    }
+                });
 
                 frame.setVisible(true);
 
                 // Start the game loop
                 drawer.startGame();
 
-            } else {
+            } else //when we choose square grid
+             {
                 SquareGrid squaregrid= new SquareGrid(gridSize, deadCellColor);
 
                 JFrame frame = new JFrame("Conway's Game of Life on squares");
                 SquareGridDrawer drawer = new SquareGridDrawer(squaregrid, deadCellColor);
+
+                 //to make it movable across the screen
+                JScrollPane scrollPane = new JScrollPane(drawer);
+                drawer.setPreferredSize(new Dimension(1000, 1000));
+                frame.add(scrollPane);
+
                 drawer.setsquareSize(polygonSize);
 
-                frame.add(drawer);
                 frame.setSize(800, 800);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -200,6 +241,32 @@ public class Main {
                     squaregrid.saveSquareGridToFile("squareGridState.txt");
                     System.out.println("Grid state is saved in squareGridState.txt");
                 });
+
+                // Create a new JButton for the pause button
+                JButton pauseButton = new JButton("Pause");
+                pauseButton.setBackground(Color.BLUE); // Set the button color to blue
+                //pauseButton.setForeground(Color.WHITE); // Set the text color to white
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                frame.add(pauseButton, BorderLayout.NORTH);
+                pauseButton.addActionListener(event -> {
+                    // Pause the game
+                    drawer.getTimer().cancel();
+                    drawer.setTimer(null);
+                });
+
+                // Restart the game
+                JButton restartButton = new JButton("Restart");
+                restartButton.setBackground(Color.GREEN); // Set the button color to green
+                restartButton.setForeground(Color.BLACK); // Set the text color to white
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                frame.add(restartButton, BorderLayout.EAST);
+                restartButton.addActionListener(event -> {
+                    if (drawer.getTimer() == null) {
+                        drawer.startGame(); // start a new game
+                    }
+                });
+
 
                 frame.setVisible(true);
 
