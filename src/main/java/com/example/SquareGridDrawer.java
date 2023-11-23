@@ -17,6 +17,11 @@ public class SquareGridDrawer extends JPanel {
     private Color deadCellColor;
     private double scaleFactor = 1.0; //for zooming in and out
     private Timer timer;
+    private String selectedRule;
+
+    public void setdeadCellColor(Color color){
+        this.deadCellColor = color;
+    }
 
     public Timer getTimer() {
         return timer;
@@ -33,9 +38,9 @@ public class SquareGridDrawer extends JPanel {
         this.squareSize = size;
     }
 
-    public SquareGridDrawer(SquareGrid squareGrid, Color deadCellColor) {
+    public SquareGridDrawer(SquareGrid squareGrid, String selectedRule) {
         this.squareGrid = squareGrid;
-        this.deadCellColor = deadCellColor;
+        this.selectedRule = selectedRule;
 
         //to make it zoom in and out if the grid is too big, 
         //or the size of the shapes makes it not fit the screen
@@ -65,7 +70,7 @@ public class SquareGridDrawer extends JPanel {
     }
 
     private void updateGrid() {
-        squareGrid.updateGameOfLife();
+        squareGrid.updateGameOfLife(selectedRule);
     }
 
     @Override

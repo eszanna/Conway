@@ -2,11 +2,14 @@ package com.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Objects;
 
 public class Main {
 
     public static Color deadCellColor;
+    public static String selectedRule;
 
     public static void main(String[] args) {
         
@@ -24,7 +27,6 @@ public class Main {
         menuFrame.setLayout(new GridBagLayout());
         menuFrame.setFont(new Font("Arial", Font.BOLD, 14));
         menuFrame.setBackground(Color.ORANGE);
-
 
         //for better positioning
         GridBagConstraints gbc = new GridBagConstraints();
@@ -56,6 +58,20 @@ public class Main {
         menuFrame.add(colorSelectionLabel, gbc);
         menuFrame.add(colorSelection, gbc);
 
+        // Create a JLabel and JComboBox for the rules selection
+        JLabel rulesSelectionLabel = new JLabel("Choose the set of rules:", SwingConstants.CENTER);
+        String[] rules = {"Default", "High Life", "Move"};
+        JComboBox<String> rulesSelection = new JComboBox<>(rules);
+        rulesSelection.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent event) {
+               if (event.getStateChange() == ItemEvent.SELECTED) {
+                  selectedRule = event.getItem().toString();
+               }
+            }       
+        });
+        menuFrame.add(rulesSelectionLabel, gbc);
+        menuFrame.add(rulesSelection, gbc);
+        selectedRule = (String) rulesSelection.getSelectedItem();
 
         //loading and repeating the save option there
         JButton loadButton = new JButton("LOAD HEXAGONS");
@@ -65,7 +81,8 @@ public class Main {
             HexagonalGrid hexagonalGrid = HexagonalGrid.loadGridFromFile("gridState.txt");
             
             JFrame frame = new JFrame("Conway's Game of Life on Hexagons");
-                HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, Color.WHITE);
+                HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, selectedRule);
+                drawer.setdeadCellColor(hexagonalGrid.getDeadCellColor());
                 //to make it movable across the screen
                 JScrollPane scrollPane = new JScrollPane(drawer);
                 drawer.setPreferredSize(new Dimension(1000, 1000));
@@ -80,6 +97,39 @@ public class Main {
                     System.out.println("Grid state is saved in gridState.txt");
                 });
 
+                // Create a new JButton for the pause button
+                JButton pauseButton = new JButton("Pause");
+                pauseButton.setPreferredSize(new Dimension(100, 30));
+                pauseButton.setBackground(Color.BLUE); 
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20));
+                frame.add(pauseButton, BorderLayout.WEST);
+                pauseButton.addActionListener(pause -> {
+                    // Pause the game
+                    drawer.getTimer().cancel();
+                    drawer.setTimer(null);
+                });
+
+                //Button to continue the game
+                JButton restartButton = new JButton("Continue");
+                restartButton.setBackground(Color.GREEN);
+                restartButton.setForeground(Color.BLACK);
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20));
+                frame.add(restartButton, BorderLayout.EAST);
+                restartButton.addActionListener(continue2 -> {
+                    if (drawer.getTimer() == null) {
+                        drawer.startGame(); 
+                    }
+                });
+
+                //describing the rules for a better understanding to enjoy the game :)
+                JTextArea rulesetArea = new JTextArea();
+                rulesetArea.setText(hexagonalGrid.getRuleDetails()); 
+                rulesetArea.setLineWrap(true);
+                rulesetArea.setWrapStyleWord(true);
+                rulesetArea.setEditable(false); 
+                rulesetArea.setFont(new Font("Serif", Font.PLAIN, 12));
+                frame.add(rulesetArea, BorderLayout.NORTH);
 
                 frame.setVisible(true);
 
@@ -96,7 +146,8 @@ public class Main {
             SquareGrid squareGrid = SquareGrid.loadSquareGridFromFile("SquareGridState.txt");
             
             JFrame frame = new JFrame("Conway's Game of Life on Hexagons");
-                SquareGridDrawer drawer = new SquareGridDrawer(squareGrid, Color.WHITE);
+                SquareGridDrawer drawer = new SquareGridDrawer(squareGrid, selectedRule);
+                drawer.setdeadCellColor(squareGrid.getDeadCellColor());
                 //to make it movable across the screen
                 JScrollPane scrollPane = new JScrollPane(drawer);
                 drawer.setPreferredSize(new Dimension(1000, 1000));
@@ -112,13 +163,47 @@ public class Main {
                     System.out.println("Grid state is saved in SquareGridState.txt");
                 });
 
+                // Create a new JButton for the pause button
+                JButton pauseButton = new JButton("Pause");
+                pauseButton.setPreferredSize(new Dimension(100, 30));
+                pauseButton.setBackground(Color.BLUE); 
+                pauseButton.setForeground(Color.BLACK);
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20));
+                frame.add(pauseButton, BorderLayout.WEST);
+                pauseButton.addActionListener(pause2 -> {
+                    // Pause the game
+                    drawer.getTimer().cancel();
+                    drawer.setTimer(null);
+                });
+
+                //Button to continue the game
+                JButton restartButton = new JButton("Continue");
+                restartButton.setBackground(Color.GREEN);
+                restartButton.setForeground(Color.BLACK);
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20));
+                frame.add(restartButton, BorderLayout.EAST);
+                restartButton.addActionListener(continue3 -> {
+                    if (drawer.getTimer() == null) {
+                        drawer.startGame(); 
+                    }
+                });
+
+                //describing the rules for a better understanding to enjoy the game :)
+                JTextArea rulesetArea = new JTextArea();
+                rulesetArea.setText(squareGrid.getRuleDetails()); 
+                rulesetArea.setLineWrap(true);
+                rulesetArea.setWrapStyleWord(true);
+                rulesetArea.setEditable(false); 
+                rulesetArea.setFont(new Font("Serif", Font.PLAIN, 12));
+                frame.add(rulesetArea, BorderLayout.NORTH);
+
+
                 frame.setVisible(true);
 
                 // Start the game loop
                 drawer.startGame();
             System.out.println("Grid state is loaded from SquareGridState.txt");
         });
-
 
         // Create a JButton for the "START" button
         JButton startButton = new JButton("START");
@@ -165,12 +250,14 @@ public class Main {
             }
 
             // Determine the type of grid
+            ///HEXAGON
             String selectedGridType = (String) gridTypeSelection.getSelectedItem();
             if (Objects.requireNonNull(selectedGridType).equals("Hexagon")) {
-                HexagonalGrid hexagonalGrid = new HexagonalGrid(gridSize, deadCellColor);
+                HexagonalGrid hexagonalGrid = new HexagonalGrid(gridSize, deadCellColor, selectedRule);
                 
                 JFrame frame = new JFrame("Conway's Game of Life");
-                HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, deadCellColor);
+                HexagonalGridDrawer drawer = new HexagonalGridDrawer(hexagonalGrid, selectedRule);
+                drawer.setdeadCellColor(hexagonalGrid.getDeadCellColor());
 
                 //to make it movable across the screen
                 JScrollPane scrollPane = new JScrollPane(drawer);
@@ -190,28 +277,37 @@ public class Main {
 
                 // Create a new JButton for the pause button
                 JButton pauseButton = new JButton("Pause");
-                pauseButton.setBackground(Color.BLUE); // Set the button color to blue
-                //pauseButton.setForeground(Color.WHITE); // Set the text color to white
+                pauseButton.setPreferredSize(new Dimension(100, 30));
+                pauseButton.setBackground(Color.BLUE); 
                 pauseButton.setForeground(Color.BLACK);
-                pauseButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
-                frame.add(pauseButton, BorderLayout.NORTH);
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20));
+                frame.add(pauseButton, BorderLayout.WEST);
                 pauseButton.addActionListener(event -> {
                     // Pause the game
                     drawer.getTimer().cancel();
                     drawer.setTimer(null);
                 });
 
-                // Restart the game
-                JButton restartButton = new JButton("Restart");
-                restartButton.setBackground(Color.GREEN); // Set the button color to green
-                restartButton.setForeground(Color.BLACK); // Set the text color to white
-                restartButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                //Button to continue the game
+                JButton restartButton = new JButton("Continue");
+                restartButton.setBackground(Color.GREEN);
+                restartButton.setForeground(Color.BLACK);
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20));
                 frame.add(restartButton, BorderLayout.EAST);
                 restartButton.addActionListener(event -> {
                     if (drawer.getTimer() == null) {
-                        drawer.startGame(); // start a new game
+                        drawer.startGame(); 
                     }
                 });
+
+                //describing the rules for a better understanding to enjoy the game :)
+                JTextArea rulesetArea = new JTextArea();
+                rulesetArea.setText(hexagonalGrid.getRuleDetails()); 
+                rulesetArea.setLineWrap(true);
+                rulesetArea.setWrapStyleWord(true);
+                rulesetArea.setEditable(false); 
+                rulesetArea.setFont(new Font("Serif", Font.PLAIN, 12));
+                frame.add(rulesetArea, BorderLayout.NORTH);
 
                 frame.setVisible(true);
 
@@ -220,10 +316,11 @@ public class Main {
 
             } else //when we choose square grid
              {
-                SquareGrid squaregrid= new SquareGrid(gridSize, deadCellColor);
+                SquareGrid squaregrid= new SquareGrid(gridSize, deadCellColor, selectedRule);
 
-                JFrame frame = new JFrame("Conway's Game of Life on squares");
-                SquareGridDrawer drawer = new SquareGridDrawer(squaregrid, deadCellColor);
+                JFrame frame = new JFrame("Conway's Game of Life on Squares");
+                SquareGridDrawer drawer = new SquareGridDrawer(squaregrid, selectedRule);
+                drawer.setdeadCellColor(squaregrid.getDeadCellColor());
 
                  //to make it movable across the screen
                 JScrollPane scrollPane = new JScrollPane(drawer);
@@ -235,38 +332,45 @@ public class Main {
                 frame.setSize(800, 800);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+                //save button
                 JButton saveButton = new JButton("SAVE");
                 frame.add(saveButton, BorderLayout.SOUTH);
-                saveButton.addActionListener(event -> {
+                saveButton.addActionListener(saving -> {
                     squaregrid.saveSquareGridToFile("squareGridState.txt");
                     System.out.println("Grid state is saved in squareGridState.txt");
                 });
 
                 // Create a new JButton for the pause button
                 JButton pauseButton = new JButton("Pause");
-                pauseButton.setBackground(Color.BLUE); // Set the button color to blue
-                //pauseButton.setForeground(Color.WHITE); // Set the text color to white
+                pauseButton.setBackground(Color.BLUE); 
                 pauseButton.setForeground(Color.BLACK);
-                pauseButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
-                frame.add(pauseButton, BorderLayout.NORTH);
-                pauseButton.addActionListener(event -> {
+                pauseButton.setFont(new Font("Arial", Font.BOLD, 20)); 
+                frame.add(pauseButton, BorderLayout.WEST);
+                pauseButton.addActionListener(pausing -> {
                     // Pause the game
                     drawer.getTimer().cancel();
                     drawer.setTimer(null);
                 });
 
-                // Restart the game
-                JButton restartButton = new JButton("Restart");
-                restartButton.setBackground(Color.GREEN); // Set the button color to green
-                restartButton.setForeground(Color.BLACK); // Set the text color to white
-                restartButton.setFont(new Font("Arial", Font.BOLD, 20)); // Set the font size to 20
+                JButton restartButton = new JButton("Continue");
+                restartButton.setBackground(Color.GREEN); 
+                restartButton.setForeground(Color.BLACK); 
+                restartButton.setFont(new Font("Arial", Font.BOLD, 20)); 
                 frame.add(restartButton, BorderLayout.EAST);
-                restartButton.addActionListener(event -> {
+                restartButton.addActionListener(continueing -> {
                     if (drawer.getTimer() == null) {
-                        drawer.startGame(); // start a new game
+                        drawer.startGame();
                     }
                 });
 
+                //describing the rules for a better understanding to enjoy the game :)
+                JTextArea rulesetArea = new JTextArea();
+                rulesetArea.setText(squaregrid.getRuleDetails()); 
+                rulesetArea.setLineWrap(true);
+                rulesetArea.setWrapStyleWord(true);
+                rulesetArea.setEditable(false); 
+                rulesetArea.setFont(new Font("Serif", Font.PLAIN, 12));
+                frame.add(rulesetArea, BorderLayout.NORTH);
 
                 frame.setVisible(true);
 

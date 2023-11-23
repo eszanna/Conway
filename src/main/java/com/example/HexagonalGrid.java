@@ -15,10 +15,12 @@ class HexagonalGrid implements Serializable{
     private int size;
     private Hexagon[][] grid;
     private Color deadCellColor;
+    private String selectedRule;
 
-    public HexagonalGrid(int size, Color deadCellColor) {
+    public HexagonalGrid(int size, Color deadCellColor, String selectedRule) {
         this.size = size;
         this.deadCellColor = deadCellColor;
+        this.selectedRule = selectedRule;
         initializeGrid();
     }
 
@@ -89,14 +91,14 @@ class HexagonalGrid implements Serializable{
         return size;
     }
 
-
+    //since our coordinates are a bit tricky, we always need to convert it from x to q and y to r
     public Hexagon getHexagon(int q, int r) {
         int x = q + size - 1;
         int y = r + size - 1;
         return isWithinBounds(x, y) ? grid[x][y] : null;
     }
 
-    public void updateGameOfLife() {
+    public void updateGameOfLife(String selectedRule) {
 
         Hexagon[][] newGrid = new Hexagon[2 * size - 1][2 * size - 1];
 
@@ -111,17 +113,19 @@ class HexagonalGrid implements Serializable{
 
                     // Apply Conway's Game of Life rules
                     boolean newState = false;
-                    //if alive:
-                    if (currentHexagon.getState()) { 
-                        // Any live cell with fewer than two live neighbors dies (underpopulation)
-                        // Any live cell with two or three live neighbors lives on to the next generation
-                        // Any live cell with more than three live neighbors dies (overpopulation)
-                        newState = liveNeighbors == 2 || liveNeighbors == 3;
-
-                    //if dead:
-                    } else {
-                        // Any dead cell with exactly three live neighbors becomes a live cell (reproduction)
-                        newState = liveNeighbors == 3;
+                    switch (selectedRule) {
+                        case "Default":
+                            // Default rules
+                            newState = currentHexagon.getState() ? liveNeighbors == 2 || liveNeighbors == 3 : liveNeighbors == 3;
+                            break;
+                        case "High Life":
+                            // High Life rules
+                            newState = currentHexagon.getState() ? liveNeighbors == 2 || liveNeighbors == 3 : liveNeighbors == 3 || liveNeighbors == 6;
+                            break;
+                        case "Move":
+                            // Move rules
+                            newState = currentHexagon.getState() ? liveNeighbors == 2 || liveNeighbors == 4 || liveNeighbors == 5 : liveNeighbors == 3 || liveNeighbors == 6 || liveNeighbors == 7 || liveNeighbors == 8;
+                            break;
                     }
 
                     //in any other case it is kaput gemacht()
@@ -152,6 +156,9 @@ class HexagonalGrid implements Serializable{
     public void saveGridToFile(String filename) {
         try (PrintWriter writer = new PrintWriter(filename, "UTF-8")) {
             writer.println(size);
+            // Save the color as three separate integers
+            writer.println(deadCellColor.getRed() + "," + deadCellColor.getGreen() + "," + deadCellColor.getBlue());
+            writer.println(selectedRule);
     
             for (int q = -size + 1; q < size; q++) {
                 for (int r = -size + 1; r < size; r++) {
@@ -171,9 +178,19 @@ class HexagonalGrid implements Serializable{
     public static HexagonalGrid loadGridFromFile(String filename) {
         HexagonalGrid hexagonalGrid = null;
         try (Scanner scanner = new Scanner(new File(filename))) {
+            //reading the size
             int size = Integer.parseInt(scanner.nextLine());
-            hexagonalGrid = new HexagonalGrid(size);
+            //reading the color
+            String[] colorComponents = scanner.nextLine().split(",");
+            int  red = Integer.parseInt(colorComponents[0]); System.out.println("Red" + red);
+            int  green = Integer.parseInt(colorComponents[1]); System.out.println("Green" + green);
+            int  blue = Integer.parseInt(colorComponents[2]); System.out.println("Blue" + blue);
+            Color selectedColor = new Color(red, green, blue);
+            //loading the ruleset
+            String rule = scanner.nextLine();
+            hexagonalGrid = new HexagonalGrid(size, selectedColor, rule);
     
+            //reading the state of each cell in their positions
             for (int q = -size + 1; q < size; q++) {
                 for (int r = -size + 1; r < size; r++) {
                     int x = q + size - 1;
@@ -201,4 +218,28 @@ class HexagonalGrid implements Serializable{
         }
         return hexagonalGrid;
     }
+
+    public String getRuleDetails(){StringBuilder ruleDetails = new StringBuilder();
+        ruleDetails.append("The current rule is: ").append(this.selectedRule).append("\n\n");
+    
+        // Add details about the rule
+        if (this.selectedRule.equals("Default")) {
+            ruleDetails.append("The default ruleset is:\n");
+            ruleDetails.append("1. If a cell is alive and it has exactly 2 or 3 live neighbors, it stays alive.\n");
+            ruleDetails.append("2. If a cell is dead and it has exactly 3 live neighbors, it becomes alive.\n");
+            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
+            
+        } else if (this.selectedRule.equals("High Life")) {
+            ruleDetails.append("High Life ruleset is defined as follows:\n");
+            ruleDetails.append("1. A dead cell comes to life if it has exactly 3 or 6 live neighbors.\n");
+            ruleDetails.append("2. Survival: A live cell stays alive if it has 2 or 3 live neighbors.");
+            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
+        } else if (this.selectedRule.equals("Move")) {
+            ruleDetails.append("High Life ruleset is defined as follows:\n");
+            ruleDetails.append("1. Births: A dead cell comes to life if it has 3, 6, 7, or 8 live neighbors.\n");
+            ruleDetails.append("Survival: A live cell stays alive if it has 2, 4, or 5 live neighbors.");
+            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
+        }
+    
+        return ruleDetails.toString();}
 }

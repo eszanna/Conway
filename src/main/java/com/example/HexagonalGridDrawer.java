@@ -8,11 +8,18 @@ import java.util.Timer;
 
 
 public class HexagonalGridDrawer extends JPanel {
+    private static final String String = null;
     private HexagonalGrid hexagonalGrid;
     private int hexSize = 30; // default
     private Color deadCellColor;
     private double scaleFactor = 1.0;
     private Timer timer;
+    private String selectedRule;
+    
+
+    public void setdeadCellColor(Color color){
+        this.deadCellColor = color;
+    }
 
     public Timer getTimer() {
         return timer;
@@ -30,9 +37,9 @@ public class HexagonalGridDrawer extends JPanel {
         this.hexSize = size;
     }
 
-    public HexagonalGridDrawer(HexagonalGrid hexagonalGrid, Color deadCellColor) {
+    public HexagonalGridDrawer(HexagonalGrid hexagonalGrid,  String selectedRule) {
         this.hexagonalGrid = hexagonalGrid;
-        this.deadCellColor = deadCellColor;
+        this.selectedRule = selectedRule; 
 
 
         //to make it zoom in and out if the grid is too big, 
@@ -63,7 +70,7 @@ public class HexagonalGridDrawer extends JPanel {
     }
 
     private void updateGrid() {
-        hexagonalGrid.updateGameOfLife();
+        hexagonalGrid.updateGameOfLife(selectedRule);
     }
 
     @Override
