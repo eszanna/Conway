@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.awt.*;
 import java.io.Serializable;
@@ -72,7 +74,22 @@ class HexagonalGrid implements Serializable{
     //the core of the program, the most important function, the Game of Life itself
     public void updateGameOfLife(String selectedRule) {
         Hexagon[][] newGrid = new Hexagon[2 * size - 1][2 * size - 1];
+        Map<String, Integer> liveNeighborCounts = new HashMap<>();
 
+        // First, count the live neighbors for each cell
+        for (int q = -size + 1; q < size; q++) {
+            for (int r = -size + 1; r < size; r++) {
+                int x = q + size - 1;
+                int y = r + size - 1;
+
+                if (isWithinBounds(x, y)) {
+                    int liveNeighbors = countLiveNeighbors(q, r);
+                    liveNeighborCounts.put(q + "," + r, liveNeighbors);
+                }
+            }
+        }
+
+        // Then, update the state of each cell based on the count of live neighbors
         for (int q = -size + 1; q < size; q++) {
             for (int r = -size + 1; r < size; r++) {
                 int x = q + size - 1;
@@ -80,7 +97,7 @@ class HexagonalGrid implements Serializable{
 
                 if (isWithinBounds(x, y)) {
                     Hexagon currentHexagon = grid[x][y];
-                    int liveNeighbors = countLiveNeighbors(q, r);
+                    int liveNeighbors = liveNeighborCounts.getOrDefault(q + "," + r, 0);
 
                     // Apply Conway's Game of Life rules
                     boolean newState = false;

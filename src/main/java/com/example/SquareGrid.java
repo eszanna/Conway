@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import java.awt.*;
@@ -34,10 +36,10 @@ class SquareGrid implements Serializable{
     private void initializeGrid() {
         grid = new Square[size][size];
 
-       // Random number generator
+       //random number generator
         Random random = new Random();
 
-        // Iterate through all squares
+        //iterate through all squares
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 // Determine if the square should be alive or dead
@@ -65,11 +67,21 @@ class SquareGrid implements Serializable{
     //the core of our program, the main point of everything is in here, where Game of Life is playing :)
     public void updateGameOfLife(String selectedRule) {
         Square[][] newGrid = new Square[size][size];
+        Map<String, Integer> liveNeighborCounts = new HashMap<>();
 
+        //first, count the live neighbors for each cell
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                int liveNeighbors = countLiveNeighbors(i, j);
+                liveNeighborCounts.put(i + "," + j, liveNeighbors);
+            }
+        }
+
+        //then, update the state of each cell based on the count of live neighbors
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 Square currentSquare = grid[i][j];
-                int liveNeighbors = countLiveNeighbors(i, j);
+                int liveNeighbors = liveNeighborCounts.getOrDefault(i + "," + j, 0);
 
                 // Apply Conway's Game of Life rules
                 boolean newState = false;
@@ -138,7 +150,7 @@ class SquareGrid implements Serializable{
     public String getRuleDetails(){StringBuilder ruleDetails = new StringBuilder();
         ruleDetails.append("The current rule is: ").append(this.selectedRule).append("\n\n");
     
-        // Add details about the rule
+        //details about the rule
         if (this.selectedRule.equals("Default")) {
             ruleDetails.append("The default ruleset is:\n");
             ruleDetails.append("1. If a cell is alive and it has exactly 2 or 3 live neighbors, it stays alive.\n");
