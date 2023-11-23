@@ -11,6 +11,7 @@ import java.util.TimerTask;
 
 import javax.swing.*;
 
+//class responsible for drawing out our Grid
 public class SquareGridDrawer extends JPanel {
     private SquareGrid squareGrid;
     private int squareSize = 30; // default
@@ -58,6 +59,7 @@ public class SquareGridDrawer extends JPanel {
             });
     }
 
+    //if the game is too fast or too slow, we can set it here
     public void startGame() {
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -66,7 +68,7 @@ public class SquareGridDrawer extends JPanel {
                 updateGrid();
                 repaint();
             }
-        }, 1000, 1000); // Adjust the delay and period as needed
+        }, 1000, 1000); // <--- adjust the delay and period as needed
     }
 
     private void updateGrid() {

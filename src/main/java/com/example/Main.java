@@ -1,6 +1,9 @@
 package com.example;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -22,7 +25,7 @@ public class Main {
 
         // Create a new JFrame for the menu
         JFrame menuFrame = new JFrame("Game Menu");
-        menuFrame.setSize(400, 300);
+        menuFrame.setSize(800, 800);
         menuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         menuFrame.setLayout(new GridBagLayout());
         menuFrame.setFont(new Font("Arial", Font.BOLD, 14));
@@ -33,20 +36,23 @@ public class Main {
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Create a JLabel and JComboBox for the grid type selection
+        // Create a JLabel and JComboBox for the grid type selection (hexa or square)
         JLabel gridTypeLabel = new JLabel("Choose the type of grid:", SwingConstants.CENTER);
         String[] gridTypes = {"Square", "Hexagon"};
         JComboBox<String> gridTypeSelection = new JComboBox<>(gridTypes);
         menuFrame.add(gridTypeLabel, gbc);
         menuFrame.add(gridTypeSelection, gbc);
 
-        // Create a JLabel and JTextField for the grid size input
-        JLabel gridSizeLabel = new JLabel("Enter a size for the grid (#hexagons in a row: 2*size-1):", SwingConstants.CENTER);
+        String gridSizeInfo = "<html><font size='3'>Enter a size for the grid! <br>(It IS NOT EQUAL to the # of hexagons.)<br>(recommended size for hexagonal grid is between 5-40)<br><font size='3'>SIZE OF GRID:</html>";
+        JLabel gridSizeLabel = new JLabel(gridSizeInfo, SwingConstants.LEFT);
+        gridSizeLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
         JTextField gridSizeInput = new JTextField();
         menuFrame.add(gridSizeLabel, gbc);
         menuFrame.add(gridSizeInput, gbc);
-
-        JLabel polygonSizeLabel = new JLabel("Enter a size for the polygons:", SwingConstants.CENTER);
+        
+        String polygonSizeInfo = "<html><font size='3'>Enter a size for the polygons!<br>Doesn't matter much because you can ZOOM in and out by scrolling with the mouse. <br><font size='3'>SIZE OF POLYGON:</html>";
+        JLabel polygonSizeLabel = new JLabel(polygonSizeInfo, SwingConstants.CENTER);
+        polygonSizeLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
         JTextField polygonSizeInput = new JTextField();
         menuFrame.add(polygonSizeLabel, gbc);
         menuFrame.add(polygonSizeInput, gbc);
@@ -75,6 +81,7 @@ public class Main {
 
         //loading and repeating the save option there
         JButton loadButton = new JButton("LOAD HEXAGONS");
+        loadButton.setBorder(new EmptyBorder(10, 10, 10, 10));
             menuFrame.add(loadButton, gbc);
             loadButton.addActionListener(event -> {
 
@@ -122,7 +129,7 @@ public class Main {
                     }
                 });
 
-                //describing the rules for a better understanding to enjoy the game :)
+                //describing the rules for a better understanding to enjoy the "game" more :)
                 JTextArea rulesetArea = new JTextArea();
                 rulesetArea.setText(hexagonalGrid.getRuleDetails()); 
                 rulesetArea.setLineWrap(true);
@@ -140,12 +147,13 @@ public class Main {
         });
 
         JButton loadSquareButton = new JButton("LOAD SQUARES");
+        loadSquareButton.setBorder(new EmptyBorder(10, 10, 10, 10));
             menuFrame.add(loadSquareButton, gbc);
             loadSquareButton.addActionListener(event -> {
 
             SquareGrid squareGrid = SquareGrid.loadSquareGridFromFile("SquareGridState.txt");
             
-            JFrame frame = new JFrame("Conway's Game of Life on Hexagons");
+            JFrame frame = new JFrame("Conway's Game of Life on Squares");
                 SquareGridDrawer drawer = new SquareGridDrawer(squareGrid, selectedRule);
                 drawer.setdeadCellColor(squareGrid.getDeadCellColor());
                 //to make it movable across the screen
@@ -210,14 +218,13 @@ public class Main {
         startButton.setBackground(Color.GREEN);
         startButton.setPreferredSize(new Dimension(100, 50)); // Set the size of the button
         startButton.setMargin(new Insets(10, 10, 10, 10)); // Add some space around the button
+
         startButton.addActionListener(e -> {
-            // Parse the grid size
             int gridSize = Integer.parseInt(gridSizeInput.getText());
 
-            // Parse the POLYGON size
             int polygonSize = Integer.parseInt(polygonSizeInput.getText());
 
-            // Convert the color string to a Color object
+            //convert the color string to a Color object
             String selectedColor = (String) colorSelection.getSelectedItem();
             switch (Objects.requireNonNull(selectedColor)) {
                 case "WHITE":
@@ -275,7 +282,7 @@ public class Main {
                     System.out.println("Grid state is saved in gridState.txt");
                 });
 
-                // Create a new JButton for the pause button
+                //create a new JButton for the pause button
                 JButton pauseButton = new JButton("Pause");
                 pauseButton.setPreferredSize(new Dimension(100, 30));
                 pauseButton.setBackground(Color.BLUE); 
@@ -288,7 +295,7 @@ public class Main {
                     drawer.setTimer(null);
                 });
 
-                //Button to continue the game
+                //button to continue the game
                 JButton restartButton = new JButton("Continue");
                 restartButton.setBackground(Color.GREEN);
                 restartButton.setForeground(Color.BLACK);

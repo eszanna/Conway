@@ -1,16 +1,16 @@
 package com.example;
 
 import java.util.Random;
-import java.util.Scanner;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-
+//class responsible for storing the individual living squares
 class SquareGrid implements Serializable{
     private int size;
     private Square[][] grid;
@@ -23,7 +23,6 @@ class SquareGrid implements Serializable{
         this.selectedRule = selectedRule;
         initializeGrid();
     }
-
 
     public Color getDeadCellColor() {
         return deadCellColor;
@@ -59,11 +58,11 @@ class SquareGrid implements Serializable{
         return size;
     }
 
-
     public Square getSquare(int i, int j) {
         return isWithinBounds(i, j) ? grid[i][j] : null;
     }
 
+    //the core of our program, the main point of everything is in here, where Game of Life is playing :)
     public void updateGameOfLife(String selectedRule) {
         Square[][] newGrid = new Square[size][size];
 
@@ -98,6 +97,8 @@ class SquareGrid implements Serializable{
         grid = newGrid;
     
     }   
+
+    //necessary to determine the next state of each square
     private int countLiveNeighbors(int i, int j) {
         int liveNeighbors = 0;
     
@@ -109,22 +110,13 @@ class SquareGrid implements Serializable{
                 }
             }
         }
-    
         return liveNeighbors;
     }
 
+
     public void saveSquareGridToFile(String filename) {
-        try (PrintWriter writer = new PrintWriter(filename, "UTF-8")) {
-            writer.println(size);
-            writer.println(deadCellColor.getRed() + "," + deadCellColor.getGreen() + "," + deadCellColor.getBlue());
-            writer.println(selectedRule);
-    
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    Square square = grid[i][j];
-                    writer.println(i + "," + j + "," + (square.getState() ? "alive" : "dead"));
-                }
-            }
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(this);
         } catch (IOException e) {
             System.out.println("An error occurred while saving the grid to a file.");
             e.printStackTrace();
@@ -133,40 +125,16 @@ class SquareGrid implements Serializable{
 
     public static SquareGrid loadSquareGridFromFile(String filename) {
         SquareGrid squareGrid = null;
-        try (Scanner scanner = new Scanner(new File(filename))) {
-            int size = Integer.parseInt(scanner.nextLine());
-            String[] colorComponents = scanner.nextLine().split(",");
-            int  red = Integer.parseInt(colorComponents[0]); System.out.println("Red " + red);
-            int  green = Integer.parseInt(colorComponents[1]); System.out.println("Green " + green);
-            int  blue = Integer.parseInt(colorComponents[2]); System.out.println("Blue " + blue);
-            Color selectedColor = new Color(red, green, blue);
-            //loading the ruleset
-            String rule = scanner.nextLine();
-            squareGrid = new SquareGrid(size, selectedColor, rule);
-        
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    squareGrid.grid[i][j].setState(false);
-                }
-            }
-    
-            // Update cells according to the file
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(",");
-                int i = Integer.parseInt(parts[0]);
-                int j = Integer.parseInt(parts[1]);
-                boolean isAlive = parts[2].equals("alive");
-            
-                squareGrid.grid[i][j].setState(isAlive);
-            }
-        } catch (FileNotFoundException e) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            squareGrid = (SquareGrid) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             System.out.println("An error occurred while loading the grid from a file.");
             e.printStackTrace();
         }
         return squareGrid;
     }
 
+    //this is just a bit of explanation of the rules on the game screen
     public String getRuleDetails(){StringBuilder ruleDetails = new StringBuilder();
         ruleDetails.append("The current rule is: ").append(this.selectedRule).append("\n\n");
     

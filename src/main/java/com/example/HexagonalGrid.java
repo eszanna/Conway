@@ -4,12 +4,11 @@ import java.util.Random;
 import java.awt.*;
 import java.io.Serializable;
 
-import java.io.PrintWriter;
 import java.io.IOException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
-
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 class HexagonalGrid implements Serializable{
     private int size;
@@ -24,13 +23,6 @@ class HexagonalGrid implements Serializable{
         initializeGrid();
     }
 
-    public HexagonalGrid(int size) {
-        this.size = size;
-        this.deadCellColor = Color.WHITE;
-        initializeGridforFile();
-    }
-
-
     public Color getDeadCellColor() {
         return deadCellColor;
     }
@@ -41,7 +33,6 @@ class HexagonalGrid implements Serializable{
         // Calculate the center of the grid
         int centerX = size - 1;
         int centerY = size - 1;
-
 
        // Random number generator
         Random random = new Random();
@@ -62,27 +53,7 @@ class HexagonalGrid implements Serializable{
          
     }
 
-    //Because we will not store the chosen color in the file, it is white by default
-        private void initializeGridforFile() {
-        grid = new Hexagon[2 * size - 1][2 * size - 1];
-
-        // Calculate the center of the grid
-        int centerX = size - 1;
-        int centerY = size - 1;
-
-        // Iterate through all hexagons
-        for (int q = -size + 1; q < size; q++) {
-            for (int r = -size + 1; r < size; r++) {
-                int x = q + centerX;
-                int y = r + centerY;
-
-                boolean isAlive = false;
-                grid[x][y] = new Hexagon(q, r, isAlive);
-            }
-        }
-         
-    }
-
+    //to make sure we never have issues with overindexing
     private boolean isWithinBounds(int x, int y) {
         return x >= 0 && x < 2 * size - 1 && y >= 0 && y < 2 * size - 1;
     }
@@ -91,15 +62,15 @@ class HexagonalGrid implements Serializable{
         return size;
     }
 
-    //since our coordinates are a bit tricky, we always need to convert it from x to q and y to r
+    //since our coordinates are a bit tricky, we always need to convert it from 'x' to 'q' and 'y' to 'r'
     public Hexagon getHexagon(int q, int r) {
         int x = q + size - 1;
         int y = r + size - 1;
         return isWithinBounds(x, y) ? grid[x][y] : null;
     }
 
+    //the core of the program, the most important function, the Game of Life itself
     public void updateGameOfLife(String selectedRule) {
-
         Hexagon[][] newGrid = new Hexagon[2 * size - 1][2 * size - 1];
 
         for (int q = -size + 1; q < size; q++) {
@@ -133,10 +104,10 @@ class HexagonalGrid implements Serializable{
                 }
             }
         }
-
-    grid = newGrid;
+        grid = newGrid;
+    }
     
-    }   
+    //needed to determine the next state of the hexagon, because it depends on its neighbors
     private int countLiveNeighbors(int q, int r) {
         int liveNeighbors = 0;
     
@@ -148,87 +119,42 @@ class HexagonalGrid implements Serializable{
                 liveNeighbors++;
             }
         }
-    
         return liveNeighbors;
     }
 
 
     public void saveGridToFile(String filename) {
-        try (PrintWriter writer = new PrintWriter(filename, "UTF-8")) {
-            writer.println(size);
-            // Save the color as three separate integers
-            writer.println(deadCellColor.getRed() + "," + deadCellColor.getGreen() + "," + deadCellColor.getBlue());
-            writer.println(selectedRule);
-    
-            for (int q = -size + 1; q < size; q++) {
-                for (int r = -size + 1; r < size; r++) {
-                    int x = q + size - 1;
-                    int y = r + size - 1;
-                    if (isWithinBounds(x, y)) {
-                        Hexagon hexagon = grid[x][y];
-                        writer.println(q + "," + r + "," + (hexagon.getState() ? "alive" : "dead"));
-                    }
-                }
-            }
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            out.writeObject(this);
         } catch (IOException e) {
             System.out.println("An error occurred while saving the grid to a file.");
             e.printStackTrace();
         }
     }
+
     public static HexagonalGrid loadGridFromFile(String filename) {
         HexagonalGrid hexagonalGrid = null;
-        try (Scanner scanner = new Scanner(new File(filename))) {
-            //reading the size
-            int size = Integer.parseInt(scanner.nextLine());
-            //reading the color
-            String[] colorComponents = scanner.nextLine().split(",");
-            int  red = Integer.parseInt(colorComponents[0]); System.out.println("Red" + red);
-            int  green = Integer.parseInt(colorComponents[1]); System.out.println("Green" + green);
-            int  blue = Integer.parseInt(colorComponents[2]); System.out.println("Blue" + blue);
-            Color selectedColor = new Color(red, green, blue);
-            //loading the ruleset
-            String rule = scanner.nextLine();
-            hexagonalGrid = new HexagonalGrid(size, selectedColor, rule);
-    
-            //reading the state of each cell in their positions
-            for (int q = -size + 1; q < size; q++) {
-                for (int r = -size + 1; r < size; r++) {
-                    int x = q + size - 1;
-                    int y = r + size - 1;
-                    hexagonalGrid.grid[x][y].setState(false);
-                }
-            }
-    
-            // Update cells according to the file
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] parts = line.split(",");
-                int q = Integer.parseInt(parts[0]);
-                int r = Integer.parseInt(parts[1]);
-                boolean isAlive = parts[2].equals("alive");
-            
-                int x = q + size - 1;
-                int y = r + size - 1;
-            
-                hexagonalGrid.grid[x][y].setState(isAlive);
-            }
-        } catch (FileNotFoundException e) {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            hexagonalGrid = (HexagonalGrid) in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             System.out.println("An error occurred while loading the grid from a file.");
             e.printStackTrace();
         }
         return hexagonalGrid;
     }
 
+
+    //this is just a bit of explanation of the rules on the game screen
     public String getRuleDetails(){StringBuilder ruleDetails = new StringBuilder();
         ruleDetails.append("The current rule is: ").append(this.selectedRule).append("\n\n");
     
-        // Add details about the rule
+        //details about the rule
         if (this.selectedRule.equals("Default")) {
             ruleDetails.append("The default ruleset is:\n");
             ruleDetails.append("1. If a cell is alive and it has exactly 2 or 3 live neighbors, it stays alive.\n");
             ruleDetails.append("2. If a cell is dead and it has exactly 3 live neighbors, it becomes alive.\n");
             ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
-            
+
         } else if (this.selectedRule.equals("High Life")) {
             ruleDetails.append("High Life ruleset is defined as follows:\n");
             ruleDetails.append("1. A dead cell comes to life if it has exactly 3 or 6 live neighbors.\n");
