@@ -1,35 +1,21 @@
-package com.example;
+package conway.Main;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.awt.*;
-import java.io.Serializable;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 
-class HexagonalGrid implements Serializable{
-    private int size;
+public class HexagonalGrid extends Grid{
     private Hexagon[][] grid;
-    private Color deadCellColor;
-    private String selectedRule;
 
     public HexagonalGrid(int size, Color deadCellColor, String selectedRule) {
-        this.size = size;
-        this.deadCellColor = deadCellColor;
-        this.selectedRule = selectedRule;
+        super(size, deadCellColor, selectedRule);
         initializeGrid();
     }
 
-    public Color getDeadCellColor() {
-        return deadCellColor;
-    }
-
-    private void initializeGrid() {
+    @Override
+	public void initializeGrid() {
         grid = new Hexagon[2 * size - 1][2 * size - 1];
 
         // Calculate the center of the grid
@@ -56,12 +42,9 @@ class HexagonalGrid implements Serializable{
     }
 
     //to make sure we never have issues with overindexing
-    private boolean isWithinBounds(int x, int y) {
+    @Override
+    public boolean isWithinBounds(int x, int y) {
         return x >= 0 && x < 2 * size - 1 && y >= 0 && y < 2 * size - 1;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     //since our coordinates are a bit tricky, we always need to convert it from 'x' to 'q' and 'y' to 'r'
@@ -72,11 +55,12 @@ class HexagonalGrid implements Serializable{
     }
 
     //the core of the program, the most important function, the Game of Life itself
+    @Override
     public void updateGameOfLife(String selectedRule) {
         Hexagon[][] newGrid = new Hexagon[2 * size - 1][2 * size - 1];
         Map<String, Integer> liveNeighborCounts = new HashMap<>();
 
-        // First, count the live neighbors for each cell
+        //first, count the live neighbors for each cell
         for (int q = -size + 1; q < size; q++) {
             for (int r = -size + 1; r < size; r++) {
                 int x = q + size - 1;
@@ -89,7 +73,7 @@ class HexagonalGrid implements Serializable{
             }
         }
 
-        // Then, update the state of each cell based on the count of live neighbors
+        //then, update the state of each cell based on the count of live neighbors
         for (int q = -size + 1; q < size; q++) {
             for (int r = -size + 1; r < size; r++) {
                 int x = q + size - 1;
@@ -99,7 +83,7 @@ class HexagonalGrid implements Serializable{
                     Hexagon currentHexagon = grid[x][y];
                     int liveNeighbors = liveNeighborCounts.getOrDefault(q + "," + r, 0);
 
-                    // Apply Conway's Game of Life rules
+                    //apply Conway's Game of Life rules
                     boolean newState = false;
                     switch (selectedRule) {
                         case "Default":
@@ -138,51 +122,4 @@ class HexagonalGrid implements Serializable{
         }
         return liveNeighbors;
     }
-
-
-    public void saveGridToFile(String filename) {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
-            out.writeObject(this);
-        } catch (IOException e) {
-            System.out.println("An error occurred while saving the grid to a file.");
-            e.printStackTrace();
-        }
-    }
-
-    public static HexagonalGrid loadGridFromFile(String filename) {
-        HexagonalGrid hexagonalGrid = null;
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
-            hexagonalGrid = (HexagonalGrid) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("An error occurred while loading the grid from a file.");
-            e.printStackTrace();
-        }
-        return hexagonalGrid;
-    }
-
-
-    //this is just a bit of explanation of the rules on the game screen
-    public String getRuleDetails(){StringBuilder ruleDetails = new StringBuilder();
-        ruleDetails.append("The current rule is: ").append(this.selectedRule).append("\n\n");
-    
-        //details about the rule
-        if (this.selectedRule.equals("Default")) {
-            ruleDetails.append("The default ruleset is:\n");
-            ruleDetails.append("1. If a cell is alive and it has exactly 2 or 3 live neighbors, it stays alive.\n");
-            ruleDetails.append("2. If a cell is dead and it has exactly 3 live neighbors, it becomes alive.\n");
-            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
-
-        } else if (this.selectedRule.equals("High Life")) {
-            ruleDetails.append("High Life ruleset is defined as follows:\n");
-            ruleDetails.append("1. A dead cell comes to life if it has exactly 3 or 6 live neighbors.\n");
-            ruleDetails.append("2. Survival: A live cell stays alive if it has 2 or 3 live neighbors.");
-            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
-        } else if (this.selectedRule.equals("Move")) {
-            ruleDetails.append("High Life ruleset is defined as follows:\n");
-            ruleDetails.append("1. Births: A dead cell comes to life if it has 3, 6, 7, or 8 live neighbors.\n");
-            ruleDetails.append("Survival: A live cell stays alive if it has 2, 4, or 5 live neighbors.");
-            ruleDetails.append("3. In all other cases, a cell dies or remains dead.\n");
-        }
-    
-        return ruleDetails.toString();}
 }

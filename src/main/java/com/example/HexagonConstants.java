@@ -1,4 +1,4 @@
-package com.example;
+package conway.Main;
 
 class HexagonConstants {
     static final int[] NEIGHBOR_OFFSETS_Q = {1, 1, 0, -1, -1, 0};

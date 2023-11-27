@@ -1,36 +1,19 @@
-package com.example;
 
+package conway.Main;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.*;
 
 //class responsible for drawing out our Grid
-public class SquareGridDrawer extends JPanel {
+public class SquareGridDrawer extends Drawer{
     private SquareGrid squareGrid;
     private int squareSize = 30; // default
-    private Color deadCellColor;
-    private double scaleFactor = 1.0; //for zooming in and out
-    private Timer timer;
-    private String selectedRule;
 
-    public void setdeadCellColor(Color color){
-        this.deadCellColor = color;
-    }
-
-    public Timer getTimer() {
-        return timer;
-    }
-
-    public void setTimer(Timer timer) {
-        this.timer = timer;
-    }
     public int getsquareSize(){
         return squareSize;
     }
@@ -40,23 +23,8 @@ public class SquareGridDrawer extends JPanel {
     }
 
     public SquareGridDrawer(SquareGrid squareGrid, String selectedRule) {
+        super(selectedRule);
         this.squareGrid = squareGrid;
-        this.selectedRule = selectedRule;
-
-        //to make it zoom in and out if the grid is too big, 
-        //or the size of the shapes makes it not fit the screen
-        addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                int notches = e.getWheelRotation();
-                if (notches < 0) {
-                    scaleFactor *= 1.1; // Zoom in
-                } else {
-                    scaleFactor /= 1.1; // Zoom out
-                }
-                repaint();
-            }
-            });
     }
 
     //if the game is too fast or too slow, we can set it here
@@ -68,15 +36,16 @@ public class SquareGridDrawer extends JPanel {
                 updateGrid();
                 repaint();
             }
-        }, 1000, 1000); // <--- adjust the delay and period as needed
+        }, 25, 25); // <--- adjust the delay and period as needed
     }
 
-    private void updateGrid() {
+    @Override
+    public void updateGrid() {
         squareGrid.updateGameOfLife(selectedRule);
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+	public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.scale(scaleFactor, scaleFactor);
@@ -96,6 +65,7 @@ public class SquareGridDrawer extends JPanel {
         }
     }
 
+    //and this is the unique function which is responsible to draw the squares one by one
     private void drawSquare(Graphics2D g2d, int x, int y, boolean isAlive) {
         Rectangle square = new Rectangle(x, y, squareSize, squareSize);
 
@@ -106,9 +76,7 @@ public class SquareGridDrawer extends JPanel {
             g2d.setColor(deadCellColor);
             g2d.fill(square);
             g2d.setColor(Color.BLACK);
-            g2d.draw(square);
-
-            
+            g2d.draw(square);            
         }
     }
 }
