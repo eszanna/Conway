@@ -1,4 +1,4 @@
-package conway.Main;
+package com.example;
 
 public class Square extends Shape {
     private int i;

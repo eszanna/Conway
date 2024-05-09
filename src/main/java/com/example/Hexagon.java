@@ -1,4 +1,4 @@
-package conway.Main;
+package com.example;
 
 public class Hexagon extends Shape {
     private int q;

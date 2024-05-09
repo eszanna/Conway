@@ -1,4 +1,4 @@
-package conway.Main;
+package com.example;
 
 import java.awt.*;
 import java.util.TimerTask;
